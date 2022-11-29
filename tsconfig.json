@@ -18,11 +18,7 @@
 		  "~/*": ["./*"]
 		},
 		"typeRoots": [
-			"node_modules/@types",
-			"node_module/phaser/types"
-		],
-		"types": [
-			"Phaser"
+			"node_modules/@types"
 		]
 	  },
 	  "include": ["src/**/*"]
