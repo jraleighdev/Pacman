@@ -1,3 +1,7 @@
+import { Ghost } from "./models/ghost";
+import { PacMan } from "./models/pacman";
+import { State } from "./state/states";
+
 const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
 
@@ -9,102 +13,185 @@ const createRect = (x: number, y: number, width: number, height: number, color: 
     ctx.fillRect(x, y, width, height);
 }
 
-const fps = 30;
-const rectSize = 20;
-const wallColor = '#342DCA';
-const wallSpaceWidth = rectSize / 1.5;
-const wallOffset = (rectSize - wallSpaceWidth) / 2;
-const wallInnerColor = 'black';
-let score = 0;
+let pacman: PacMan;
+let ghosts: Ghost[];
 
-const map = [
-  /*1*/  [1,1,1,1,1 ,1,1,1,1,1 ,1, 1,1,1,1,1, 1,1,1,1,1],
-  /*2*/  [1,2,2,2,2 ,2,2,2,2,2 ,1, 2,2,2,2,2 ,2,2,2,2,1],
-  /*3*/  [1,2,1,1,1 ,2,1,1,1,2 ,1, 2,1,1,1,2 ,1,1,1,2,1],
-  /*4*/  [1,2,1,1,1 ,2,1,1,1,2 ,1, 2,1,1,1,2 ,1,1,1,2,1],
-  /*5*/  [1,2,2,2,2 ,2,2,2,2,2 ,2, 2,2,2,2,2 ,2,2,2,2,1],
-  /*6*/  [1,2,1,1,1 ,2,1,2,1,1 ,1, 1,1,2,1,2 ,1,1,1,2,1],
-  /*7*/  [1,2,2,2,2 ,2,1,2,2,2 ,1, 2,2,2,1,2 ,2,2,2,2,1],
-  /*8*/  [1,1,1,1,1 ,2,1,1,1,2 ,1, 2,1,1,1,2 ,1,1,1,1,1],
-  /*9*/  [0,0,0,0,1 ,2,1,2,2,2 ,2, 2,2,2,1,2 ,1,0,0,0,0],
-  /*10*/ [1,1,1,1,1 ,2,1,2,1,1 ,2, 1,1,2,1,2 ,1,1,1,1,1],
-  /*11*/ [2,2,2,2,2 ,2,2,2,1,2 ,2, 2,1,2,2,2 ,2,2,2,2,2],
-  /*12*/ [1,1,1,1,1 ,2,1,2,1,2 ,2, 2,1,2,1,2 ,1,1,1,1,1],
-  /*13*/ [0,0,0,0,1 ,2,1,2,1,1 ,1, 1,1,2,1,2 ,1,0,0,0,0],
-  /*14*/ [0,0,0,0,1 ,2,1,2,2,2 ,2, 2,2,2,1,2 ,1,0,0,0,0],
-  /*15*/ [1,1,1,1,1 ,2,2,2,1,1 ,1, 1,1,2,2,2 ,1,1,1,1,1],
-  /*16*/ [1,2,2,2,2 ,2,2,2,2,2 ,1, 2,2,2,2,2 ,2,2,2,2,1],
-  /*17*/ [1,2,1,1,1 ,2,1,1,1,2 ,1, 2,1,1,1,2 ,1,1,1,2,1],
-  /*18*/ [1,2,2,2,1 ,2,2,2,2,2 ,2, 2,2,2,2,2 ,1,2,2,2,1],
-  /*19*/ [1,1,2,2,1 ,2,1,2,1,1 ,1, 1,1,2,1,2 ,1,2,2,1,1],
-  /*20*/ [1,2,2,2,2 ,2,1,2,2,2 ,1, 2,2,2,1,2 ,2,2,2,2,1],
-  /*21*/ [1,2,1,1,1 ,1,1,1,1,2 ,1, 2,1,1,1,1 ,1,1,1,2,1],
-  /*22*/ [1,2,2,2,2 ,2,2,2,2,2 ,2, 2,2,2,2,2 ,2,2,2,2,1],
-  /*23*/ [1,1,1,1,1 ,1,1,1,1,1 ,1, 1,1,1,1,1 ,1,1,1,1,1]
-];
+const createNewPacMan = () => {
+    pacman = new PacMan(State.rectSize, State.rectSize, State.rectSize, State.rectSize, State.rectSize / 5, ctx, pacManFrames);
+}
+
+const createGhosts = () => {
+    ghosts = [];
+    for (let i = 0; i < State.ghostCount * 2; i++) {
+        const newGhost = new Ghost(
+            9 * State.rectSize + (i % 2 === 0 ? 0 : 1) * State.rectSize,
+            10 * State.rectSize + (i % 2 === 0 ? 0 : 1) * State.rectSize,
+            State.rectSize,
+            State.rectSize,
+            pacman.speed / 2,
+            State.ghostImageLocations[i % 4].x,
+            State.ghostImageLocations[i % 4].y,
+            124,
+            116,
+            6 + i,
+            State.randomTargetsForGhosts,
+            pacman,
+            ghostFrames,
+            ctx
+        );
+        ghosts.push(newGhost);
+    }
+}
+
+const updateGhosts = () => {
+    for (let i = 0; i < ghosts.length; i++) {
+        ghosts[i].moveProcess();
+    }
+};
+
+const drawGhosts = () => {
+    console.log(ghosts);
+    for (let i = 0; i < ghosts.length; i++) {
+        ghosts[i].draw();
+    }
+};
+
+const restartPacmanAndGhosts = () => {
+    createNewPacMan();
+    createGhosts();
+}
+
+const onGhostCollision = () => {
+    State.lives--;
+    pacman.eat();
+    // updateGhosts();
+    if (pacman.checkGhostCollision(ghosts)) {
+        onGhostCollision();
+    }
+}
 
 const drawWalls = () => {
-    for (let i = 0; i < map.length; i++) {
-        for (let j = 0; j < map[0].length; j++) {
-            if(map[i][j] === 1) {
+    for (let i = 0; i < State.map.length; i++) {
+        for (let j = 0; j < State.map[0].length; j++) {
+            if(State.map[i][j] === 1) {
                 createRect(
-                    j * rectSize, 
-                    i * rectSize, 
-                    rectSize, 
-                    rectSize, 
-                    wallColor);
+                    j * State.rectSize, 
+                    i * State.rectSize, 
+                    State.rectSize, 
+                    State.rectSize, 
+                    State.wallColor);
             }
-            if (j > 0 && map[i][j - 1] == 1) {
+            if (j > 0 && State.map[i][j - 1] == 1) {
                 createRect(
-                    j * rectSize, 
-                    i * rectSize + wallOffset, 
-                    wallSpaceWidth + wallOffset, 
-                    wallSpaceWidth,
-                    wallInnerColor)
+                    j * State.rectSize, 
+                    i * State.rectSize + State.wallOffset, 
+                    State.wallSpaceWidth + State.wallOffset, 
+                    State.wallSpaceWidth,
+                    State.wallInnerColor)
             }
-            if (j < map[0].length - 1 && map[i][j + 1] == 1) {
+            if (j < State.map[0].length - 1 && State.map[i][j + 1] == 1) {
                 createRect(
-                    j * rectSize + wallOffset, 
-                    i * rectSize + wallOffset, 
-                    wallSpaceWidth + wallOffset, 
-                    wallSpaceWidth,
-                    wallInnerColor)
+                    j * State.rectSize + State.wallOffset, 
+                    i * State.rectSize + State.wallOffset, 
+                    State.wallSpaceWidth + State.wallOffset, 
+                    State.wallSpaceWidth,
+                    State.wallInnerColor)
             }
-            if (i > 0 && map[i - 1][j] == 1) {
+            if (i > 0 && State.map[i - 1][j] == 1) {
                 createRect(
-                    j * rectSize + wallOffset, 
-                    i * rectSize, 
-                    wallSpaceWidth, 
-                    wallSpaceWidth + wallOffset,
-                    wallInnerColor)
+                    j * State.rectSize + State.wallOffset, 
+                    i * State.rectSize, 
+                    State.wallSpaceWidth, 
+                    State.wallSpaceWidth + State.wallOffset,
+                    State.wallInnerColor)
             }
-            if (i < map.length - 1 && map[i + 1][j] == 1) {
+            if (i < State.map.length - 1 && State.map[i + 1][j] == 1) {
                 createRect(
-                    j * rectSize + wallOffset, 
-                    i * rectSize + wallOffset, 
-                    wallSpaceWidth, 
-                    wallSpaceWidth + wallOffset,
-                    wallInnerColor)
+                    j * State.rectSize + State.wallOffset, 
+                    i * State.rectSize + State.wallOffset, 
+                    State.wallSpaceWidth, 
+                    State.wallSpaceWidth + State.wallOffset,
+                    State.wallInnerColor)
             }
         }
     }
 }
 
-const update = () => {
-    // todo
-}
+const drawFoods = () => {
+    for (let i = 0; i < State.map.length; i++) {
+        for (let j = 0; j < State.map[0].length; j++) {
+            if (State.map[i][j] == 2) {
+                createRect(
+                    j * State.rectSize + State.rectSize / 3,
+                    i * State.rectSize + State.rectSize / 3,
+                    State.rectSize / 3,
+                    State.rectSize / 3,
+                    "#FEB897"
+                );
+            }
+        }
+    }
+};
+
+const drawRemainingLives = () => {
+    ctx.font = "20px Emulogic";
+    ctx.fillStyle = "white";
+    ctx.fillText("Lives: ", 220, State.rectSize * (State.map.length + 1));
+
+    for (let i = 0; i < State.lives; i++) {
+        ctx.drawImage(
+            pacManFrames,
+            2 * State.rectSize,
+            0,
+            State.rectSize,
+            State.rectSize,
+            350 + i * State.rectSize,
+            State.rectSize * State.map.length + 2,
+            State.rectSize,
+            State.rectSize
+        );
+    }
+};
+
+const drawScore = () => {
+    ctx.font = "20px Emulogic";
+    ctx.fillStyle = "white";
+    ctx.fillText(
+        "Score: " + State.score,
+        0,
+        State.rectSize * (State.map.length + 1)
+    );
+};
+
+
 
 const draw = () => {
     createRect(0, 0, canvas.width, canvas.height, 'black');
+
     // todo
+    drawFoods();
     drawWalls();
+    // drawGhosts();
+    pacman.draw();
+    drawScore();
+    drawRemainingLives();
 }
 
-const gameLoop = () => {
-    update();
+const update = () => {
+    pacman.moveProcess();
+    pacman.eat();
+    // updateGhosts();
+    // if (pacman.checkGhostCollision(ghosts)) {
+    //     onGhostCollision();
+    // }
     draw();
+
+    requestAnimationFrame(update);
 }
 
-const gameInterval = setInterval(gameLoop, 1000 / fps);
+createNewPacMan();
+createGhosts();
+
+update();
 
 

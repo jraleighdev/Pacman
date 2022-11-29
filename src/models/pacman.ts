@@ -1,6 +1,8 @@
+import { DIRECTIONS } from "~/enums/moveDirections";
+import { State } from "~/state/states";
 import { Ghost } from "./ghost";
 
-class PacMan {
+export class PacMan {
 
     private nextDirection = DIRECTIONS.RIGHT;
     private frameCount = 7;
@@ -12,6 +14,8 @@ class PacMan {
         public width: number,
         public height: number,
         public speed: number,
+        public ctx: CanvasRenderingContext2D,
+        public images: HTMLImageElement,
         public direction: DIRECTIONS = DIRECTIONS.RIGHT
     ) { 
         setInterval(() => {
@@ -29,15 +33,15 @@ class PacMan {
     }
 
     eat(): void {
-        for (let i = 0; i < map.length; i++) {
-            for (let j = 0; j < map[0].length; j++) {
+        for (let i = 0; i < State.map.length; i++) {
+            for (let j = 0; j < State.map[0].length; j++) {
                 if (
-                    map[i][j] == 2 &&
+                    State.map[i][j] == 2 &&
                     this.getMapX() == j &&
                     this.getMapY() == i
                 ) {
-                    map[i][j] == 3;
-                    score++;
+                    State.map[i][j] == 3;
+                    State.score++;
                 }
             }
         }
@@ -80,17 +84,17 @@ class PacMan {
     checkCollision(): boolean {
         let isCollided = false;
         if (
-            map[Math.floor(this.y / rectSize)][
-                Math.floor(this.x / rectSize)
+            State.map[Math.floor(this.y / State.rectSize)][
+                Math.floor(this.x / State.rectSize)
             ] == 1 ||
-            map[Math.floor(this.y / rectSize + 0.9999)][
-                Math.floor(this.x / rectSize)
+            State.map[Math.floor(this.y / State.rectSize + 0.9999)][
+                Math.floor(this.x / State.rectSize)
             ] == 1 ||
-            map[Math.floor(this.y / rectSize)][
-                Math.floor(this.x / rectSize + 0.9999)
+            State.map[Math.floor(this.y / State.rectSize)][
+                Math.floor(this.x / State.rectSize + 0.9999)
             ] == 1 ||
-            map[Math.floor(this.y / rectSize + 0.9999)][
-                Math.floor(this.x / rectSize + 0.9999)
+            State.map[Math.floor(this.y / State.rectSize + 0.9999)][
+                Math.floor(this.x / State.rectSize + 0.9999)
             ] == 1
         ) {
             isCollided = true;
@@ -98,8 +102,17 @@ class PacMan {
         return isCollided;
     }
 
-    checkGhostCollision(ghosts: Ghost[]): void {
-
+    checkGhostCollision(ghosts: Ghost[]): boolean {
+        for (let i = 0; i < ghosts.length; i++) {
+            const ghost = ghosts[i];
+            if (
+                ghost.getMapX() == this.getMapX() &&
+                ghost.getMapY() == this.getMapY()
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     changeDirectionIfPossible(): void {
@@ -115,25 +128,26 @@ class PacMan {
     }
 
     changeAnimation(): void {
-
+        this.currentFrame =
+        this.currentFrame == this.frameCount ? 1 : this.currentFrame + 1;
     }
 
     draw(): void {
-        ctx.save();
-        ctx.translate(
-            -this.x - rectSize / 2,
-            -this.y - rectSize / 2
+        this.ctx.save();
+        this.ctx.translate(
+            -this.x - State.rectSize / 2,
+            -this.y - State.rectSize / 2
         );
-        ctx.rotate((this.direction * 90 * Math.PI) / 180);
-        ctx.translate(
-            -this.x - rectSize / 2,
-            -this.y - rectSize / 2
+        this.ctx.rotate((this.direction * 90 * Math.PI) / 180);
+        this.ctx.translate(
+            -this.x - State.rectSize / 2,
+            -this.y - State.rectSize / 2
         );
-        ctx.drawImage(pacManFrames,
-            (this.currentFrame - 1) * rectSize,
+        this.ctx.drawImage(this.images,
+            (this.currentFrame - 1) * State.rectSize,
             0,
-            rectSize,
-            rectSize,
+            State.rectSize,
+            State.rectSize,
             this.x,
             this.y,
             this.width,
@@ -142,18 +156,18 @@ class PacMan {
     }
 
     getMapX(): number {
-        return Math.floor(this.x / rectSize);
+        return Math.floor(this.x / State.rectSize);
     }
 
     getMapY(): number {
-        return Math.floor(this.y / rectSize);
+        return Math.floor(this.y / State.rectSize);
     }
 
     getMapXRightSide() {
-        return Math.floor((this.x + .9999 * rectSize) / rectSize);
+        return Math.floor((this.x + .9999 * State.rectSize) / State.rectSize);
     }
 
     getMapYRightSide() {
-        return Math.floor((this.y + .9999 * rectSize) / rectSize);
+        return Math.floor((this.y + .9999 * State.rectSize) / State.rectSize);
     }
 }
