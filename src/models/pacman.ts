@@ -58,7 +58,7 @@ class PacMan {
     checkCollision(): boolean {
         let isCollided = false;
         if (map[this.getMapy()][this.getMapX()] === 1 || map[this.getMapYRightSide()][this.getMapX()] === 1) {
-
+            
         }
     }
 
