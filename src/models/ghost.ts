@@ -1,7 +1,7 @@
-import { DIRECTIONS } from "~/enums/moveDirections";
-import { Queue } from "~/interfaces/queue";
-import { Target } from "~/interfaces/targets";
-import { State } from "~/state/states";
+import { DIRECTIONS } from "../enums/moveDirections";
+import { Queue } from "../interfaces/queue";
+import { Target } from "../interfaces/targets";
+import { State } from "../state/states";
 import { PacMan } from "./pacman";
 
 export class Ghost {

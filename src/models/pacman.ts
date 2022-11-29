@@ -1,5 +1,5 @@
-import { DIRECTIONS } from "~/enums/moveDirections";
-import { State } from "~/state/states";
+import { DIRECTIONS } from "../enums/moveDirections";
+import { State } from "../state/states";
 import { Ghost } from "./ghost";
 
 export class PacMan {
