@@ -15,6 +15,7 @@ const wallColor = '#342DCA';
 const wallSpaceWidth = rectSize / 1.5;
 const wallOffset = (rectSize - wallSpaceWidth) / 2;
 const wallInnerColor = 'black';
+let score = 0;
 
 const map = [
   /*1*/  [1,1,1,1,1 ,1,1,1,1,1 ,1, 1,1,1,1,1, 1,1,1,1,1],
