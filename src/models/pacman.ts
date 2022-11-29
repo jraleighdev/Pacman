@@ -4,7 +4,7 @@ import { Ghost } from "./ghost";
 
 export class PacMan {
 
-    private nextDirection = DIRECTIONS.RIGHT;
+    public nextDirection = DIRECTIONS.RIGHT;
     private frameCount = 7;
     private currentFrame = 1;
 
@@ -40,7 +40,7 @@ export class PacMan {
                     this.getMapX() == j &&
                     this.getMapY() == i
                 ) {
-                    State.map[i][j] == 3;
+                    State.map[i][j] = 3;
                     State.score++;
                 }
             }
@@ -50,16 +50,16 @@ export class PacMan {
     moveBackWards(): void {
         switch (this.direction) {
             case DIRECTIONS.RIGHT:
-                this.x += this.speed;
-                break;
-            case DIRECTIONS.LEFT:
                 this.x -= this.speed;
                 break;
+            case DIRECTIONS.LEFT:
+                this.x += this.speed;
+                break;
             case DIRECTIONS.UP:
-                this.y -= this.speed;
+                this.y += this.speed;
                 break;
             case DIRECTIONS.BOTTOM:
-                this.y += this.speed;
+                this.y -= this.speed;
                 break;
         }
     }
@@ -67,16 +67,16 @@ export class PacMan {
     moveForwards(): void {
         switch (this.direction) {
             case DIRECTIONS.RIGHT:
-                this.x -= this.speed;
-                break;
-            case DIRECTIONS.LEFT:
                 this.x += this.speed;
                 break;
+            case DIRECTIONS.LEFT:
+                this.x -= this.speed;
+                break;
             case DIRECTIONS.UP:
-                this.y += this.speed;
+                this.y -= this.speed;
                 break;
             case DIRECTIONS.BOTTOM:
-                this.y -= this.speed;
+                this.y += this.speed;
                 break;
         }
     }
@@ -118,6 +118,7 @@ export class PacMan {
     changeDirectionIfPossible(): void {
         if (this.direction === this.nextDirection) return;
         const tempDirection = this.direction;
+        this.direction = this.nextDirection;
         this.moveForwards();
         if (this.checkCollision()) {
             this.moveBackWards();
@@ -128,15 +129,14 @@ export class PacMan {
     }
 
     changeAnimation(): void {
-        this.currentFrame =
-        this.currentFrame == this.frameCount ? 1 : this.currentFrame + 1;
+        this.currentFrame = this.currentFrame == this.frameCount ? 1 : this.currentFrame + 1;
     }
 
     draw(): void {
         this.ctx.save();
         this.ctx.translate(
-            -this.x - State.rectSize / 2,
-            -this.y - State.rectSize / 2
+            this.x + State.rectSize / 2,
+            this.y + State.rectSize / 2
         );
         this.ctx.rotate((this.direction * 90 * Math.PI) / 180);
         this.ctx.translate(
@@ -153,6 +153,7 @@ export class PacMan {
             this.width,
             this.height
             )
+        this.ctx.restore();
     }
 
     getMapX(): number {
@@ -164,10 +165,10 @@ export class PacMan {
     }
 
     getMapXRightSide() {
-        return Math.floor((this.x + .9999 * State.rectSize) / State.rectSize);
+        return Math.floor((this.x * 0.99 + State.rectSize) / State.rectSize);
     }
 
     getMapYRightSide() {
-        return Math.floor((this.y + .9999 * State.rectSize) / State.rectSize);
+        return Math.floor((this.y * 0.99 + State.rectSize) / State.rectSize);
     }
 }

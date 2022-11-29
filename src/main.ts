@@ -1,3 +1,4 @@
+import { DIRECTIONS } from "./enums/moveDirections";
 import { Ghost } from "./models/ghost";
 import { PacMan } from "./models/pacman";
 import { State } from "./state/states";
@@ -50,7 +51,6 @@ const updateGhosts = () => {
 };
 
 const drawGhosts = () => {
-    console.log(ghosts);
     for (let i = 0; i < ghosts.length; i++) {
         ghosts[i].draw();
     }
@@ -63,10 +63,9 @@ const restartPacmanAndGhosts = () => {
 
 const onGhostCollision = () => {
     State.lives--;
-    pacman.eat();
-    // updateGhosts();
-    if (pacman.checkGhostCollision(ghosts)) {
-        onGhostCollision();
+    restartPacmanAndGhosts();
+    if (State.lives == 0) {
+        console.log('Game Over!')
     }
 }
 
@@ -169,9 +168,9 @@ const draw = () => {
     createRect(0, 0, canvas.width, canvas.height, 'black');
 
     // todo
-    drawFoods();
     drawWalls();
-    // drawGhosts();
+    drawFoods();
+    drawGhosts();
     pacman.draw();
     drawScore();
     drawRemainingLives();
@@ -180,10 +179,10 @@ const draw = () => {
 const update = () => {
     pacman.moveProcess();
     pacman.eat();
-    // updateGhosts();
-    // if (pacman.checkGhostCollision(ghosts)) {
-    //     onGhostCollision();
-    // }
+    updateGhosts();
+    if (pacman.checkGhostCollision(ghosts)) {
+        onGhostCollision();
+    }
     draw();
 
     requestAnimationFrame(update);
@@ -193,5 +192,26 @@ createNewPacMan();
 createGhosts();
 
 update();
+
+window.addEventListener('keydown', (event: KeyboardEvent) => {
+    const k = event.keyCode;
+    setTimeout(() => {
+        if (k == 37 || k == 65) {
+            // left arrow or a
+            console.log('left');
+            pacman.nextDirection = DIRECTIONS.LEFT;
+        } else if (k == 38 || k == 87) {
+            // up arrow or w
+            pacman.nextDirection = DIRECTIONS.UP;
+        } else if (k == 39 || k == 68) {
+            // right arrow or d
+            console.log('right')
+            pacman.nextDirection = DIRECTIONS.RIGHT;
+        } else if (k == 40 || k == 83) {
+            // bottom arrow or s
+            pacman.nextDirection = DIRECTIONS.BOTTOM;
+        }
+    }, 1);
+})
 
 

@@ -270,15 +270,5 @@ export class Ghost {
             this.height
         );
         this.ctx.restore();
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = "red";
-        this.ctx.arc(
-            this.x + State.rectSize / 2,
-            this.y + State.rectSize / 2,
-            this.range * State.rectSize,
-            0,
-            2 * Math.PI
-        );
-        this.ctx.stroke();
     }
 }
